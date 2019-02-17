@@ -19,6 +19,34 @@ void* ThreadCache::Allocate(size_t size)
 	}
 
 	//走到该处及说明该自由链表没有可用的内存块
-	
-	return nullptr;
+	return FetchFromCentralCache(index, size);
+}
+
+void* ThreadCache::FetchFromCentralCache(size_t index, size_t byte)
+{
+	assert(byte <= MAXBYTES);
+	FreeList& freelist = _freelist[index];
+	size_t num = 10;	//想要从CentralCache拿到的内存块的个数
+
+	void *start, *end;	//标记拿到的内存	fetchnum表示真实拿到的内存块个数
+	size_t fetchnum = CentralCache::GetInstance()->FetchRangeObj(start, end, num, byte);
+	if (fetchnum == 1)
+	{
+		//如果只从CentralCache拿到一块就不用将剩余的内存块挂载在自由链表下
+		return start;
+	}
+
+	freelist.PushRange(NEXT_OBJ(start), end, fetchnum - 1);
+	return start;
+}
+
+//释放内存块
+void ThreadCache::Deallocate(void* ptr, size_t size)
+{
+	size = ClassSize::Roundup(size);
+	size_t index = ClassSize::Index(size);
+	FreeList& freelist = _freelist[index];
+
+	//将内存块头插
+	freelist.Push(ptr);
 }

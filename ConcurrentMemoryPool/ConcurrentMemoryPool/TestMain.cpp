@@ -1,6 +1,7 @@
 #include "ThreadCache.h"
-#include "Common.h"
+//#include "Common.h"
 #include <iostream>
+#include <vector>
 using std::cout;
 using std::endl;
 
@@ -17,9 +18,16 @@ void TestIndexALG(size_t size)
 {
 	cout << "size: " << size << ";  _index: "<<  ClassSize::Index(size) << endl;
 }
+
+void TestAllocate(size_t size)
+{
+	ThreadCache t;
+	t.Allocate(size);
+}
 int main()
 {
 	//TestRangeupALG(127, 8);
-	TestIndexALG(1025);
+	//TestIndexALG(1025);
+	TestAllocate(8);
 	return 0;
 }
