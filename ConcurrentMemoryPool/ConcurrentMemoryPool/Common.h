@@ -179,20 +179,53 @@ public:
 		_head->_prev = _head;
 	}
 
+	void Insert(Span* cur, Span* newspan)
+	{
+		assert(cur);
+		Span* prev = cur->_prev;
+
+		prev->_next = newspan;
+		newspan->_prev = prev;
+		newspan->_next = cur;
+		cur->_prev = newspan;
+	}
+
+	void Earse(Span* cur)
+	{
+		assert(cur != nullptr && cur != _head);
+
+		Span* prev = cur->_prev;
+		Span* next = cur->_next;
+
+		prev->_next = next;
+		next->_prev = prev;
+	}
+
 	bool Empty()
 	{
 		return _head->_next == _head;
 	}
 
+	Span* Begin()
+	{
+		return _head->_next;
+	}
+
+	Span* End()
+	{
+		return _head->_prev;
+	}
+
 	Span* Pop()
 	{
-		assert(!Empty());
-		Span* span = _head->_next;
-		Span* next = span->_next;
-
-		_head->_next = next;
-		next->_prev = _head;
+		Span* span = Begin();
+		Earse(span);
 		return span;
+	}
+
+	void PushFront(Span* span)
+	{
+		Insert(Begin(), span);
 	}
 
 private:

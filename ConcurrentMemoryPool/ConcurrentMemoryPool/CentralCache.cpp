@@ -42,6 +42,7 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 	end = cur;
 	NEXT_OBJ(end) = nullptr;
 
+	span->_usecount += fetchnum;
 	return fetchnum;
 }
 

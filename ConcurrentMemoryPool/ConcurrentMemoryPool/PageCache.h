@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include <windows.h>
+#include <map>
 //PageCache类为单例类
 class PageCache
 {
@@ -18,6 +19,7 @@ private:
 
 private:
 	SpanList _pagelist[NPAGES];
+	std::map<PageID, Span*> _id_span_map;
 
 	static PageCache _Inst;
 };

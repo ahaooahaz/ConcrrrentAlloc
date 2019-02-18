@@ -22,12 +22,12 @@ void TestIndexALG(size_t size)
 void TestAllocate(size_t size)
 {
 	ThreadCache t;
-	t.Allocate(size);
+	void* p1 = t.Allocate(size);
 }
 int main()
 {
 	//TestRangeupALG(127, 8);
 	//TestIndexALG(1025);
-	TestAllocate(8);
+	TestAllocate(7);
 	return 0;
 }
