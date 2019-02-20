@@ -59,3 +59,77 @@ Span* PageCache::NewSpan(size_t npage)
 	newspan->_pageid = (PageID)ptr >> 12;
 	newspan->_npage = npage;
 	return newspan;*/
+
+Span* PageCache::MapObjectToSpan(void* obj)
+{
+	PageID pageid = (PageID)obj >> 12;
+	auto it = _id_span_map.find(pageid);
+	assert(it != _id_span_map.end());
+
+	return it->second;
+}
+
+void PageCache::TakeSpanToPageCache(Span* span)
+{
+	assert(span != nullptr);
+	auto previt = _id_span_map.find(span->_pageid - 1);
+	while (previt != _id_span_map.end())
+	{
+		//查看前一个Span
+		Span* prevspan = previt->second;
+		if (prevspan->_usecount != 0)
+		{
+			//前一个span正在使用中，则不能与前一个合并
+			break;
+		}
+
+		//走到这里说明可以与前一个span进行合并
+		if ((prevspan->_npage + span->_npage) > NPAGES)
+		{
+			//说明与前一个span合并之后的页大小超过128
+			break;
+		}
+
+		_pagelist[prevspan->_npage].Earse(prevspan);
+		prevspan->_npage += span->_npage;
+		delete span;
+
+		span = prevspan;
+
+		//继续向前合并
+		previt = _id_span_map.find(span->_pageid - 1);
+	}
+
+	//向后合并
+	auto nextit = _id_span_map.find(span->_pageid + span->_npage);
+	while (nextit != _id_span_map.end())
+	{
+		Span* nextspan = nextit->second;
+		if ((span->_npage + nextspan->_npage) > NPAGES)
+		{
+			//超过128不进行合并
+			break;
+		}
+
+		if (nextspan->_usecount != 0)
+		{
+			//前一个span不空闲不合并
+			break;
+		}
+
+		_pagelist[nextspan->_npage].Earse(nextspan);
+		span->_npage += nextspan->_npage;
+		delete nextspan;
+
+		nextit = _id_span_map.find(span->_pageid + span->_npage);
+	}
+
+	//合并完成，重新挂载，并重新建立映射
+	for (size_t i = 0; i < span->_npage; ++i)
+	{
+		_id_span_map[span->_pageid + i] = span;
+	}
+
+	_pagelist[span->_npage].PushFront(span);
+
+}

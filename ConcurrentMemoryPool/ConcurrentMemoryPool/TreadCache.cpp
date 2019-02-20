@@ -49,4 +49,17 @@ void ThreadCache::Deallocate(void* ptr, size_t size)
 
 	//将内存块头插
 	freelist.Push(ptr);
+
+	//当自由链表中对象数量超过一次从CentralCache中获取的对象数量时
+	//开始将内存返还到中心CentralCache
+	if (freelist.Size() >= freelist.MaxSize())
+	{
+		ReturnToCentralCache(freelist, size);
+	}
+}
+
+void ThreadCache::ReturnToCentralCache(FreeList &freelist, size_t byte)
+{
+	void* start = freelist.Clear();
+	CentralCache::GetInstance()->ReturnToCentralCache(start, byte);
 }

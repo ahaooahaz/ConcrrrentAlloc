@@ -1,5 +1,7 @@
 #include "CentralCache.h"
-
+#include <iostream>
+using std::cout;
+using std::endl;
 //创建出单例对象
 CentralCache CentralCache::_Inst;
 
@@ -27,7 +29,7 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 
 	size_t index = ClassSize::Index(byte);
 	SpanList& spanlist = _spanlist[index];
-	size_t fetchnum = 0;
+	size_t fetchnum = 1;
 	Span* span = GetOneSpan(spanlist, byte);
 
 	void* prev = nullptr;
@@ -74,7 +76,45 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte)
 	newspan->_objlist = start;
 	newspan->_usecount = 0;
 	newspan->_objsize = byte;
+
+	//将新的spanlist挂载在CentralCache中
+	spanlist.PushFront(newspan);
 	
 	return newspan;
+}
+
+void CentralCache::ReturnToCentralCache(void* start, size_t byte)
+{
+	size_t index = ClassSize::Index(byte);
+	SpanList &spanlist = _spanlist[index];
+
+	while (start)
+	{
+		void* next = NEXT_OBJ(start);
+
+		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);
+		NEXT_OBJ(start) = span->_objlist;
+		span->_objlist = start;
+
+		span->_usecount--;
+
+		if (span->_usecount == 0)
+		{
+			//说明整个页span全部被返还，即可以让改span返还给PageCache
+			spanlist.Earse(span);
+
+			span->_objlist = nullptr;
+			span->_objsize = 0;
+			span->_next = nullptr;
+			span->_prev = nullptr;
+
+			PageCache::GetInstance()->TakeSpanToPageCache(span);
+			cout << "返还给PageCache" << endl;
+		}
+		start = next;
+	}
+	
+	
+
 }
 

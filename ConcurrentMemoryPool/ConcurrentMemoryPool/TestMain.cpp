@@ -22,7 +22,18 @@ void TestIndexALG(size_t size)
 void TestAllocate(size_t size)
 {
 	ThreadCache t;
-	void* p1 = t.Allocate(size);
+	std::vector<void*> v_ptr;
+	for (size_t i = 0; i < 10; ++i)
+	{
+		void* p1 = t.Allocate(size);
+		cout << p1 << endl;
+		v_ptr.push_back(p1);
+	}
+
+	for (size_t i = 0; i < v_ptr.size(); ++i)
+	{
+		t.Deallocate(v_ptr[i], size);
+	}
 }
 int main()
 {

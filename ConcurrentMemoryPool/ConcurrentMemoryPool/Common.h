@@ -20,6 +20,24 @@ inline void*& NEXT_OBJ(void* ptr)
 class FreeList
 {
 public:
+	size_t Size()
+	{
+		return _size;
+	}
+
+	size_t MaxSize()
+	{
+		return 10;
+	}
+
+	void* Clear()
+	{
+		void* start = _ptr;
+		_ptr = nullptr;
+		_size = 0;
+		return start;
+	}
+
 	bool Empty()
 	{
 		return _ptr == nullptr;
@@ -43,6 +61,7 @@ public:
 	{
 		void* obj = _ptr;
 		_ptr = NEXT_OBJ(_ptr);
+		--_size;
 		return obj;
 	}
 

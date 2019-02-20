@@ -14,6 +14,7 @@ public:
 
 	size_t FetchRangeObj(void*& start, void*& end, size_t num, size_t byte);
 	Span* GetOneSpan(SpanList& spanlist, size_t byte);
+	void ReturnToCentralCache(void* start, size_t byte);
 
 private:
 	CentralCache() = default;
