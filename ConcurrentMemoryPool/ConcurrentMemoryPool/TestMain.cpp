@@ -40,5 +40,6 @@ int main()
 	//TestRangeupALG(127, 8);
 	//TestIndexALG(1025);
 	TestAllocate(7);
+	system("pause");
 	return 0;
 }

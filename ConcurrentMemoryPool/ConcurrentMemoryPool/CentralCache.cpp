@@ -1,7 +1,5 @@
 #include "CentralCache.h"
-#include <iostream>
-using std::cout;
-using std::endl;
+
 //创建出单例对象
 CentralCache CentralCache::_Inst;
 
@@ -27,6 +25,7 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 
 	assert(byte <= MAXBYTES);
 
+	std::unique_lock<std::mutex> _lock(_mtx);
 	size_t index = ClassSize::Index(byte);
 	SpanList& spanlist = _spanlist[index];
 	size_t fetchnum = 1;
@@ -113,8 +112,5 @@ void CentralCache::ReturnToCentralCache(void* start, size_t byte)
 		}
 		start = next;
 	}
-	
-	
-
 }
 

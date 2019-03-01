@@ -6,6 +6,13 @@ PageCache PageCache::_Inst;
 
 Span* PageCache::NewSpan(size_t npage)
 {
+	//解决对递归函数加锁的方式
+	std::unique_lock<std::mutex> _lock(_mtx);
+	return _NewSpan(npage);
+}
+
+Span* PageCache::_NewSpan(size_t npage)
+{
 	assert(npage < NPAGES);
 
 	//首先在对应的PageList上查看有没有空闲的Span
@@ -18,20 +25,25 @@ Span* PageCache::NewSpan(size_t npage)
 	//到这里即说明目标pagelist为空，需要向下寻找，进行分割
 	for (size_t i = npage + 1; i < NPAGES; ++i)
 	{
+		Span* split = nullptr;
 		SpanList& pagelist = _pagelist[i];
 		if (!pagelist.Empty())
 		{
 			//找到的pagelist不为空
 			Span* span = pagelist.Pop();
-			Span* split = new Span;
+			split = new Span;
 			split->_pageid = span->_pageid + span->_npage - npage;
 			split->_npage = npage;
+
+			//计算处剩余的内存
 			span->_npage -= npage;
+
+			//将剩余的大块内存挂载pageCache的相应位置下
 			_pagelist[span->_npage].PushFront(span);
 
 			for (size_t i = 0; i < split->_npage; ++i)
 			{
-				//建立页的映射关系
+				//建立页的映射关系，xxx页-xxx页都为split管理
 				_id_span_map[split->_pageid + i] = split;
 			}
 			return split;
@@ -50,7 +62,7 @@ Span* PageCache::NewSpan(size_t npage)
 	maxspan->_pageid = (PageID)ptr >> 12;
 	maxspan->_npage = NPAGES - 1;
 	_pagelist[NPAGES - 1].PushFront(maxspan);
-	return NewSpan(npage);
+	return _NewSpan(npage);
 }
 	
 	/*Span* newspan = new Span;
@@ -72,6 +84,8 @@ Span* PageCache::MapObjectToSpan(void* obj)
 void PageCache::TakeSpanToPageCache(Span* span)
 {
 	assert(span != nullptr);
+	std::unique_lock<std::mutex> lock(_mtx);
+
 	auto previt = _id_span_map.find(span->_pageid - 1);
 	while (previt != _id_span_map.end())
 	{

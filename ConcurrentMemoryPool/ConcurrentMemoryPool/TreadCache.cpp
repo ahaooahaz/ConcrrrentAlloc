@@ -22,6 +22,7 @@ void* ThreadCache::Allocate(size_t size)
 	return FetchFromCentralCache(index, size);
 }
 
+//想Centralcache申请一定数量的目标内存块
 void* ThreadCache::FetchFromCentralCache(size_t index, size_t byte)
 {
 	assert(byte <= MAXBYTES);

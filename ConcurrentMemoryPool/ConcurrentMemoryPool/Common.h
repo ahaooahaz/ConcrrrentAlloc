@@ -1,6 +1,8 @@
 #pragma once
 #include <assert.h>
-
+#include <iostream>
+using std::cout;
+using std::endl;
 //Common.h主要存放项目所用到的数据结构及常量
 
 //表示自由链表中一共有240类大小的内存块
@@ -80,6 +82,11 @@ public:
 	{
 		//return ((size + align) / align * align);
 		return ((size + align - 1) & ~(align - 1));
+	}
+
+	static inline PageID PtrToPageID(void* ptr)
+	{
+		//计算指针所在的页号
 	}
 
 	//根据size的大小计算应该给出的内存块大小
