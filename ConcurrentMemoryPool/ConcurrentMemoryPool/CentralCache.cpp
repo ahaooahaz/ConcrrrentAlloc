@@ -82,16 +82,13 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte)
 	return newspan;
 }
 
-void CentralCache::ReturnToCentralCache(void* start, size_t byte)
+void CentralCache::ReturnToCentralCache(void* start)
 {
-	size_t index = ClassSize::Index(byte);
-	SpanList &spanlist = _spanlist[index];
-
 	while (start)
 	{
 		void* next = NEXT_OBJ(start);
 
-		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);
+		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//根据地址拿到内存所在的页
 		NEXT_OBJ(start) = span->_objlist;
 		span->_objlist = start;
 
@@ -100,6 +97,7 @@ void CentralCache::ReturnToCentralCache(void* start, size_t byte)
 		if (span->_usecount == 0)
 		{
 			//说明整个页span全部被返还，即可以让改span返还给PageCache
+			SpanList& spanlist = _spanlist[span->_objsize];
 			spanlist.Earse(span);
 
 			span->_objlist = nullptr;

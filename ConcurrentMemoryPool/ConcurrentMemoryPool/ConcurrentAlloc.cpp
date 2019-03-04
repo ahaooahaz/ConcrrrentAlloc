@@ -7,7 +7,8 @@ void* ConcurrentAlloc(size_t size)
 	if (size > MAXBYTES)
 	{
 		//当申请的内存大于MAXBYTES时，就直接去pageCache分配内存
-		size_t npage = ClassSize::NumMovePage(size);
+		//将大块内存对齐到页
+		size_t npage = (size + (4 * 1024)) / (4 * 1024);
 		return PageCache::GetInstance()->NewSpan(npage);
 	}
 	
@@ -17,11 +18,11 @@ void* ConcurrentAlloc(size_t size)
 	return ConcurrentAlloc(size);
 }
 
-void ConcurrentFree(void* ptr, size_t size)
+void ConcurrentFree(void* ptr)
 {
 	if (_thr_threadCache != nullptr)
 	{
-		_thr_threadCache->Deallocate(ptr, size);
+		_thr_threadCache->Deallocate(ptr);
 		return;
 	}
 	throw Unknown;	//当释放内存时不存在threadcache时就抛出未知异常

@@ -32,7 +32,8 @@ void TestAllocate(size_t size)
 
 	for (size_t i = 0; i < v_ptr.size(); ++i)
 	{
-		t.Deallocate(v_ptr[i], size);
+		cout << v_ptr[i] << " ÒÑ¾­·µ»»" << endl;
+		t.Deallocate(v_ptr[i]);
 	}
 }
 int main()

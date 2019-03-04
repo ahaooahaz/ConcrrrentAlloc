@@ -84,11 +84,6 @@ public:
 		return ((size + align - 1) & ~(align - 1));
 	}
 
-	static inline PageID PtrToPageID(void* ptr)
-	{
-		//计算指针所在的页号
-	}
-
 	//根据size的大小计算应该给出的内存块大小
 	static inline size_t Roundup(size_t size)
 	{

@@ -1,6 +1,2 @@
-﻿  CentralCache.cpp
-  ConcurrentAlloc.cpp
-  TestMain.cpp
-  TreadCache.cpp
-  正在生成代码...
+﻿  TestMain.cpp
   ConcurrentMemoryPool.vcxproj -> D:\Projects\ConcurrentMemoryPool\ConcurrentMemoryPool\Debug\ConcurrentMemoryPool.exe

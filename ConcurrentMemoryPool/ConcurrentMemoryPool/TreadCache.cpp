@@ -42,11 +42,17 @@ void* ThreadCache::FetchFromCentralCache(size_t index, size_t byte)
 }
 
 //释放内存块
-void ThreadCache::Deallocate(void* ptr, size_t size)
+void ThreadCache::Deallocate(void* ptr)
 {
-	size = ClassSize::Roundup(size);
-	size_t index = ClassSize::Index(size);
-	FreeList& freelist = _freelist[index];
+	Span* span = PageCache::GetInstance()->MapObjectToSpan(ptr);
+
+	if (span->_objsize > MAXBYTES)
+	{
+		//如果要返还的Span大于最大字节大小，则直接返还给PageCache
+		PageCache::GetInstance()->TakeSpanToPageCache(span);
+		return;
+	}
+	FreeList& freelist = _freelist[span->_objsize];
 
 	//将内存块头插
 	freelist.Push(ptr);
@@ -55,12 +61,12 @@ void ThreadCache::Deallocate(void* ptr, size_t size)
 	//开始将内存返还到中心CentralCache
 	if (freelist.Size() >= freelist.MaxSize())
 	{
-		ReturnToCentralCache(freelist, size);
+		ReturnToCentralCache(freelist);
 	}
 }
 
-void ThreadCache::ReturnToCentralCache(FreeList &freelist, size_t byte)
+void ThreadCache::ReturnToCentralCache(FreeList &freelist)
 {
 	void* start = freelist.Clear();
-	CentralCache::GetInstance()->ReturnToCentralCache(start, byte);
+	CentralCache::GetInstance()->ReturnToCentralCache(start);
 }
