@@ -22,11 +22,11 @@ void* ThreadCache::Allocate(size_t size)
 	return FetchFromCentralCache(index, size);
 }
 
-//想Centralcache申请一定数量的目标内存块
+//向Centralcache申请一定数量的目标内存块
 void* ThreadCache::FetchFromCentralCache(size_t index, size_t byte)
 {
 	assert(byte <= MAXBYTES);
-	FreeList& freelist = _freelist[index];
+	FreeList& freelist = _freelist[index];	//拿到是哪个freelist想要获取内存块
 	size_t num = 10;	//想要从CentralCache拿到的内存块的个数
 
 	void *start, *end;	//标记拿到的内存	fetchnum表示真实拿到的内存块个数

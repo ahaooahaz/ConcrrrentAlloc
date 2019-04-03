@@ -2,6 +2,8 @@
 //#include "Common.h"
 #include <iostream>
 #include <vector>
+#include <thread>
+#include "BeachMark.hpp"
 using std::cout;
 using std::endl;
 
@@ -23,7 +25,7 @@ void TestAllocate(size_t size)
 {
 	ThreadCache t;
 	std::vector<void*> v_ptr;
-	for (size_t i = 0; i < 10; ++i)
+	for (size_t i = 0; i < 100; ++i)
 	{
 		void* p1 = t.Allocate(size);
 		cout << p1 << endl;
@@ -36,11 +38,17 @@ void TestAllocate(size_t size)
 		t.Deallocate(v_ptr[i]);
 	}
 }
+
 int main()
 {
 	//TestRangeupALG(127, 8);
 	//TestIndexALG(1025);
-	TestAllocate(7);
+	//TestAllocate(7);
+	AHAOAHA::BeachMark(10000, 10000, 3);
+	//ThreadCache().Allocate(3);
+	
+
+
 	system("pause");
 	return 0;
 }

@@ -3,45 +3,30 @@
 //创建出单例对象
 CentralCache CentralCache::_Inst;
 
-size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t byte)
+//向threadcache返回10个对应大小的内存块
+size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t byte/*想要得到内存块的大小*/)	
 {
-	//测试代码
-	/*start = malloc(byte * num);
-	end = (char*)start + byte * (num - 1);
-
-	void* cur = start;
-	while (cur <= end)
-	{
-		void* next = (char*)cur + byte;
-		NEXT_OBJ(cur) = next;
-
-		cur = next;
-	}
-
-	NEXT_OBJ(end) = nullptr;
-
-	return num;*/
-
-
 	assert(byte <= MAXBYTES);
 
 	std::unique_lock<std::mutex> _lock(_mtx);
-	size_t index = ClassSize::Index(byte);
-	SpanList& spanlist = _spanlist[index];
-	size_t fetchnum = 1;
-	Span* span = GetOneSpan(spanlist, byte);
+	size_t index = ClassSize::Index(byte);	//此处对齐是不必要的，为了万无一失，添加在此
+	SpanList& spanlist = _spanlist[index];		//拿到应该分配内存块的spanlist
+	size_t fetchnum = 1;	//fetchnum表示返回的内存块的大小
+	Span* span = GetOneSpan(spanlist, byte);		//获得一块对应的span，有可能来自centralcache/pagecache
 
 	void* prev = nullptr;
 	void* cur = span->_objlist;
+
+	//此处为了找到end应该标记的位置：最后一块内存的地址
 	while (cur != nullptr && fetchnum < num)
 	{
-		prev = cur;
+		prev = cur;	//跳出循环时，prev记录最后一块内存的地址
 		cur = NEXT_OBJ(cur);
 		++fetchnum;
 	}
 	start = span->_objlist;
-	end = cur;
-	NEXT_OBJ(end) = nullptr;
+	NEXT_OBJ(prev) = nullptr;
+	end = prev;
 
 	span->_usecount += fetchnum;
 	return fetchnum;
