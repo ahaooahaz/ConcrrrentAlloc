@@ -22,7 +22,7 @@ Span* PageCache::_NewSpan(size_t npage)
 		return _pagelist[npage].Pop();
 	}
 
-	//到这里即说明目标pagelist为空，需要向下寻找，进行分割
+	//到这里即说明目标pagelist为空，需要向下寻找，进行分割，从下一个位置开始寻找
 	for (size_t i = npage + 1; i < NPAGES; ++i)
 	{
 		Span* split = nullptr;
@@ -31,16 +31,18 @@ Span* PageCache::_NewSpan(size_t npage)
 		{
 			//找到的pagelist不为空
 			Span* span = pagelist.Pop();
+
 			split = new Span;
-			split->_pageid = span->_pageid + span->_npage - npage;
+			split->_pageid = span->_pageid + span->_npage - npage;	//从后面切内存	此处存在bug		如果剩余span不足应对情况
 			split->_npage = npage;
 
-			//计算处剩余的内存
+			//计算剩余的内存
 			span->_npage -= npage;
 
 			//将剩余的大块内存挂载pageCache的相应位置下
 			_pagelist[span->_npage].PushFront(span);
 
+			//只有正在使用的页才需要建立映射
 			for (size_t i = 0; i < split->_npage; ++i)
 			{
 				//建立页的映射关系，xxx页-xxx页都为split管理
@@ -64,20 +66,18 @@ Span* PageCache::_NewSpan(size_t npage)
 	_pagelist[NPAGES - 1].PushFront(maxspan);
 	return _NewSpan(npage);
 }
-	
-	/*Span* newspan = new Span;
-	void* ptr = VirtualAlloc(NULL, npage * 4 * 1024, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-	newspan->_objlist = ptr;
-	newspan->_pageid = (PageID)ptr >> 12;
-	newspan->_npage = npage;
-	return newspan;*/
 
 Span* PageCache::MapObjectToSpan(void* obj)
-{
-	PageID pageid = (PageID)obj >> 12;
-	auto it = _id_span_map.find(pageid);
-	assert(it != _id_span_map.end());
+{ 
+	PageID pageid = (PageID)obj >> 12;	//计算指针所在的页
+	auto it = _id_span_map.find(pageid);	//查找该页对应的管理页
 
+	if(it == _id_span_map.end())
+	{
+		//不应该进来这里
+		int a = 0;
+		cout << _id_span_map.max_size() << endl;
+	}
 	return it->second;
 }
 
@@ -111,7 +111,9 @@ void PageCache::TakeSpanToPageCache(Span* span)
 		span = prevspan;
 
 		//继续向前合并
+		_id_span_map.erase(previt);
 		previt = _id_span_map.find(span->_pageid - 1);
+
 	}
 
 	//向后合并

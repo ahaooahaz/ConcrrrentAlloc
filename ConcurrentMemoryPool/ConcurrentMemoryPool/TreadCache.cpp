@@ -44,6 +44,7 @@ void* ThreadCache::FetchFromCentralCache(size_t index, size_t byte)
 //释放内存块
 void ThreadCache::Deallocate(void* ptr)
 {
+	//拿到管理ptr指针的span
 	Span* span = PageCache::GetInstance()->MapObjectToSpan(ptr);
 
 	if (span->_objsize > MAXBYTES)
@@ -52,13 +53,12 @@ void ThreadCache::Deallocate(void* ptr)
 		PageCache::GetInstance()->TakeSpanToPageCache(span);
 		return;
 	}
-	FreeList& freelist = _freelist[span->_objsize];
+	FreeList& freelist = _freelist[ClassSize::Index(span->_objsize)];
 
 	//将内存块头插
 	freelist.Push(ptr);
 
-	//当自由链表中对象数量超过一次从CentralCache中获取的对象数量时
-	//开始将内存返还到中心CentralCache
+	//超过10个即返还 开始将内存返还到中心CentralCache
 	if (freelist.Size() >= freelist.MaxSize())
 	{
 		ReturnToCentralCache(freelist);

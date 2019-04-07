@@ -1,6 +1,6 @@
 #include "ConcurrentAlloc.h"
 
-_declspec(thread) ThreadCache* _thr_threadCache = nullptr;
+_declspec(thread) ThreadCache* _thr_threadCache = nullptr;	//保证threadcache为线程独有
 
 void* ConcurrentAlloc(size_t size)
 {

@@ -249,6 +249,7 @@ public:
 		Insert(Begin(), span);
 	}
 
+
 private:
 	Span* _head = nullptr;
 };

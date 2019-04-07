@@ -4,7 +4,7 @@
 #include <time.h>
 #include <thread>
 #include <vector>
-#include "ThreadCache.h"
+#include "ConcurrentAlloc.h"
 
 using std::cout;
 using std::endl;
@@ -16,10 +16,14 @@ namespace AHAOAHA{
 		std::vector<void*> v_ptr;
 		for (size_t i = 0; i < count; ++i)
 		{
-			v_ptr.push_back(ThreadCache().Allocate(bytes));	//ÉêÇëÄÚ´æ
+			v_ptr.push_back(ConcurrentAlloc(bytes));	//ÉêÇëÄÚ´æ
 		}
 
 		//TODO	ÊÍ·Å
+		for (auto & e : v_ptr)
+		{
+			ConcurrentFree(e);
+		}
 	}
 
 	void MLhandler(size_t count, size_t bytes)
@@ -31,6 +35,10 @@ namespace AHAOAHA{
 		}
 
 		//TODO	ÊÍ·Å
+		for(auto & e : v_ptr)
+		{
+			free(e);
+		}
 	}
 
 	void TCBeachMark(size_t thr_num, size_t bytes, size_t count)
@@ -40,6 +48,7 @@ namespace AHAOAHA{
 		{
 			v_thr.push_back(std::thread(&TChandler, count, bytes));
 		}
+
 
 		for(size_t i = 0; i < v_thr.size(); ++i)
 		{

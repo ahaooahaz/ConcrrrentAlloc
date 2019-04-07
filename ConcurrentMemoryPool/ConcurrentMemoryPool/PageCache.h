@@ -2,6 +2,7 @@
 #include "Common.h"
 #include <windows.h>
 #include <map>
+#include <unordered_map>
 #include <mutex>
 
 //PageCache类为单例类

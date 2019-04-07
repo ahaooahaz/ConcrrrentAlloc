@@ -11,7 +11,7 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 	std::unique_lock<std::mutex> _lock(_mtx);
 	size_t index = ClassSize::Index(byte);	//此处对齐是不必要的，为了万无一失，添加在此
 	SpanList& spanlist = _spanlist[index];		//拿到应该分配内存块的spanlist
-	size_t fetchnum = 1;	//fetchnum表示返回的内存块的大小
+	size_t fetchnum = 0;	//fetchnum表示返回的内存块的大小
 	Span* span = GetOneSpan(spanlist, byte);		//获得一块对应的span，有可能来自centralcache/pagecache
 
 	void* prev = nullptr;
@@ -69,13 +69,14 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte)
 
 void CentralCache::ReturnToCentralCache(void* start)
 {
+	std::unique_lock<std::mutex> _lock(_mtx);
 	while (start)
 	{
-		void* next = NEXT_OBJ(start);
+		void* next = NEXT_OBJ(start);	//next保存下一个内存块
 
-		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//根据地址拿到内存所在的页
-		NEXT_OBJ(start) = span->_objlist;
-		span->_objlist = start;
+		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//根据地址拿到内存块所在的span
+		NEXT_OBJ(start) = span->_objlist;	//与对应的span->_objlist连接
+		span->_objlist = start;	
 
 		span->_usecount--;
 

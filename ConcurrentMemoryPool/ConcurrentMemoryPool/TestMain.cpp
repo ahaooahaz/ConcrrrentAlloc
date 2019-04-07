@@ -24,19 +24,24 @@ void TestIndexALG(size_t size)
 void TestAllocate(size_t size)
 {
 	ThreadCache t;
+	void* ptr = t.Allocate(size);
+	t.Deallocate(ptr);
+}
+
+void TestAlloc(size_t bytes, size_t count)
+{
 	std::vector<void*> v_ptr;
-	for (size_t i = 0; i < 100; ++i)
+	for(size_t i = 0; i < count; ++i)
 	{
-		void* p1 = t.Allocate(size);
-		cout << p1 << endl;
-		v_ptr.push_back(p1);
+		v_ptr.push_back(ConcurrentAlloc(bytes));
 	}
 
-	for (size_t i = 0; i < v_ptr.size(); ++i)
+	
+	for(auto & e: v_ptr)
 	{
-		cout << v_ptr[i] << " ÒÑ¾­·µ»»" << endl;
-		t.Deallocate(v_ptr[i]);
+		ConcurrentFree(e);
 	}
+	
 }
 
 int main()
@@ -44,9 +49,9 @@ int main()
 	//TestRangeupALG(127, 8);
 	//TestIndexALG(1025);
 	//TestAllocate(7);
-	AHAOAHA::BeachMark(10000, 10000, 3);
+	//AHAOAHA::BeachMark(1, 100000, 7);
 	//ThreadCache().Allocate(3);
-	
+	TestAlloc(3, 2541);
 
 
 	system("pause");
