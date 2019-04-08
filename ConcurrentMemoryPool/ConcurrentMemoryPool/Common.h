@@ -234,7 +234,7 @@ public:
 
 	Span* End()
 	{
-		return _head->_prev;
+		return _head;
 	}
 
 	Span* Pop()
@@ -243,6 +243,7 @@ public:
 		Earse(span);
 		return span;
 	}
+
 
 	void PushFront(Span* span)
 	{

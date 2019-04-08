@@ -51,7 +51,11 @@ int main()
 	//TestAllocate(7);
 	//AHAOAHA::BeachMark(1, 100000, 7);
 	//ThreadCache().Allocate(3);
-	TestAlloc(3, 2541);
+	//TestAlloc(3, 30);
+	//TestAlloc(3, 2541);
+	TestAlloc(3, 511);
+	//void* ptr = ConcurrentAlloc(3);
+	//ConcurrentFree(ptr);
 
 
 	system("pause");

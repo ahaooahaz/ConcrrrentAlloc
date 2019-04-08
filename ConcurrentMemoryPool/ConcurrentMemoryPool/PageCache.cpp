@@ -75,8 +75,7 @@ Span* PageCache::MapObjectToSpan(void* obj)
 	if(it == _id_span_map.end())
 	{
 		//不应该进来这里
-		int a = 0;
-		cout << _id_span_map.max_size() << endl;
+		assert(false);
 	}
 	return it->second;
 }
