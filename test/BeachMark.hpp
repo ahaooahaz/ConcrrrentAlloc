@@ -16,10 +16,10 @@ namespace AHAOAHA{
 		std::vector<void*> v_ptr;
 		for (size_t i = 0; i < count; ++i)
 		{
-			v_ptr.push_back(ConcurrentAlloc(bytes));	//ÉêÇëÄÚ´æ
+			v_ptr.push_back(ConcurrentAlloc(bytes));	//ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½
 		}
 
-		//TODO	ÊÍ·Å
+		//TODO	ï¿½Í·ï¿½
 		for (auto & e : v_ptr)
 		{
 			ConcurrentFree(e);
@@ -31,10 +31,10 @@ namespace AHAOAHA{
 		std::vector<void*> v_ptr;
 		for (size_t i = 0; i < count; ++i)
 		{
-			v_ptr.push_back(malloc(bytes));	//ÉêÇëÄÚ´æ
+			v_ptr.push_back(malloc(bytes));	//ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½
 		}
 
-		//TODO	ÊÍ·Å
+		//TODO	ï¿½Í·ï¿½
 		for(auto & e : v_ptr)
 		{
 			free(e);

@@ -16,4 +16,6 @@
 *.iobj
 *.ipdb
 *.vs
-build
+build/*
+.vscode/*
+log/*

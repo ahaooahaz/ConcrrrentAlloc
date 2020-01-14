@@ -2,7 +2,6 @@
 
 ## 项目主体结构
 
-[![k2vVET.png](https://s2.ax1x.com/2019/02/20/k2vVET.png)](https://imgchr.com/i/k2vVET)
 
 * ThreadCache为个线程独有的对象，主要负责向线程提供所需要的内存块大小，ThreadCache直接与线程进行交互，当ThreadCache中没有可用的内存块时，ThreadCache就需要向下层的CentralCache申请内存块继续使用。
 * CentralCache在整个项目中仅有一个对象，CentralCache主要负责向各个线程中的ThreadCache合理分配内存块资源，当CentralCache中没有可用的内存块时，它就要继续向下层的PageCache申请内存块。
@@ -12,7 +11,6 @@
 
 ### ThreadCache的结构
 
-[![k2vnC4.png](https://s2.ax1x.com/2019/02/20/k2vnC4.png)](https://imgchr.com/i/k2vnC4)
 
 ### Thread为各线程独有
 
@@ -32,7 +30,6 @@
 
 ### CentralCache结构
 
-![1550318114266](C:\Users\hp-pc\AppData\Roaming\Typora\typora-user-images\1550318114266.png)
 
 ### CentralCache有且仅有一个对象
 
@@ -50,7 +47,6 @@
 
 ### PageCache的结构
 
-[![k2vlK1.png](https://s2.ax1x.com/2019/02/20/k2vlK1.png)](https://imgchr.com/i/k2vlK1)
 
 ### PageCache仅有一个对象
 
