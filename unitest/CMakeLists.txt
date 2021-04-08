@@ -1,0 +1,10 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+PROJECT(ConcurrentMemoryPool_unitest)
+
+SET(CMAKE_CXX_FLAGS "-std=c++11 -g -pthread")
+AUX_SOURCE_DIRECTORY(${PROJECT_SOURCE_DIR}/../src SRC)
+
+INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../src)
+
+ADD_EXECUTABLE(TEST_VECTOR ${PROJECT_SOURCE_DIR}/../src/ConcurrentAlloc.hpp
+                        ${PROJECT_SOURCE_DIR}/test_vector.cpp)

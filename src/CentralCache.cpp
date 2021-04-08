@@ -1,26 +1,23 @@
 #include "CentralCache.h"
 
-//ÊµÀı»¯µ¥Àı¶ÔÏó
 CentralCache CentralCache::_Inst;
 
-//Ïòthreadcache·µ»Ø10¸ö¶ÔÓ¦´óĞ¡µÄÄÚ´æ¿é
-size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t byte/*ÏëÒªµÃµ½ÄÚ´æ¿éµÄ´óĞ¡*/)	
-{
+size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t byte) {
 	assert(byte <= MAXBYTES);
 
 	std::unique_lock<std::mutex> _lock(_mtx);
-	size_t index = ClassSize::Index(byte);	//´Ë´¦¶ÔÆëÊÇ²»±ØÒªµÄ£¬ÎªÁËÍòÎŞÒ»Ê§£¬Ìí¼ÓÔÚ´Ë
-	SpanList& spanlist = _spanlist[index];		//ÄÃµ½Ó¦¸Ã·ÖÅäÄÚ´æ¿éµÄspanlist
-	size_t fetchnum = 0;	//fetchnum±íÊ¾·µ»ØµÄÄÚ´æ¿éµÄ´óĞ¡
-	Span* span = GetOneSpan(spanlist, byte);		//»ñµÃÒ»¿é¶ÔÓ¦µÄspan£¬ÓĞ¿ÉÄÜÀ´×Ôcentralcache/pagecache
+	size_t index = ClassSize::Index(byte);	//ï¿½Ë´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç²ï¿½ï¿½ï¿½Òªï¿½Ä£ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»Ê§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½
+	SpanList& spanlist = _spanlist[index];		//ï¿½Ãµï¿½Ó¦ï¿½Ã·ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½spanlist
+	size_t fetchnum = 0;	//fetchnumï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Øµï¿½ï¿½Ú´ï¿½ï¿½Ä´ï¿½Ğ¡
+	Span* span = GetOneSpan(spanlist, byte);		//ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½spanï¿½ï¿½ï¿½Ğ¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½centralcache/pagecache
 
 	void* prev = nullptr;
 	void* cur = span->_objlist;
 
-	//´Ë´¦ÎªÁËÕÒµ½endÓ¦¸Ã±ê¼ÇµÄÎ»ÖÃ£º×îºóÒ»¿éÄÚ´æµÄµØÖ·
+	//ï¿½Ë´ï¿½Îªï¿½ï¿½ï¿½Òµï¿½endÓ¦ï¿½Ã±ï¿½Çµï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ú´ï¿½Äµï¿½Ö·
 	while (cur != nullptr && fetchnum < num)
 	{
-		prev = cur;	//Ìø³öÑ­»·Ê±£¬prev¼ÇÂ¼×îºóÒ»¿éÄÚ´æµÄµØÖ·
+		prev = cur;	//ï¿½ï¿½ï¿½ï¿½Ñ­ï¿½ï¿½Ê±ï¿½ï¿½prevï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ú´ï¿½Äµï¿½Ö·
 		cur = NEXT_OBJ(cur);
 		++fetchnum;
 	}
@@ -30,18 +27,18 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 	end = prev;
 
 	span->_usecount += fetchnum;
-	span->_objlist = (void*)((char*)prev + byte);	//½«Ê£ÓàµÄÄÚ´æ¿é¼ÌĞøÁ´½ÓÔÚcentralcacheÖĞ
+	span->_objlist = (void*)((char*)prev + byte);	//ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½centralcacheï¿½ï¿½
 	return fetchnum;
 }
 
-// »ñÈ¡Span£¬½«SpanÇĞ·ÖÎª¶ÔÓ¦µÄÄÚ´æ¿é½Úµã´óĞ¡
+// ï¿½ï¿½È¡Spanï¿½ï¿½ï¿½ï¿½Spanï¿½Ğ·ï¿½Îªï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ú´ï¿½ï¿½Úµï¿½ï¿½Ğ¡
 Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte)
 {
 	assert(byte <= MAXBYTES);
 	if(!spanlist.Empty())
 	{
-		//µ±Ç°spanlist²»Îª¿Õ
-		//Ñ°ÕÒµ½µ±Ç°spanlistÉÏ»¹ÓĞ¿ÕÏĞobjµÄspan²¢·µ»Ø
+		//ï¿½ï¿½Ç°spanlistï¿½ï¿½Îªï¿½ï¿½
+		//Ñ°ï¿½Òµï¿½ï¿½ï¿½Ç°spanlistï¿½Ï»ï¿½ï¿½Ğ¿ï¿½ï¿½ï¿½objï¿½ï¿½spanï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		Span* cur = spanlist.Begin();
 		while (cur != spanlist.End())
 		{
@@ -53,11 +50,11 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte)
 		}
 	}
 
-	//µ±¶ÔÓ¦µÄspanlist²»´æÔÚ¿ÕÏĞµÄspanÊ±£¬¾ÍĞèÒªÏòPageCacheÉêÇëĞÂµÄspanlist
-	size_t npage = ClassSize::NumMovePage(byte);	//¼ÆËãĞèÒª¼¸Ò³µÄ´óĞ¡
-	Span* newspan = PageCache::GetInstance()->NewSpan(npage);	//´ÓPageCache»ñµÃĞÂµÄSpan
+	//ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½spanlistï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½Ğµï¿½spanÊ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½PageCacheï¿½ï¿½ï¿½ï¿½ï¿½Âµï¿½spanlist
+	size_t npage = ClassSize::NumMovePage(byte);	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ò³ï¿½Ä´ï¿½Ğ¡
+	Span* newspan = PageCache::GetInstance()->NewSpan(npage);	//ï¿½ï¿½PageCacheï¿½ï¿½ï¿½ï¿½Âµï¿½Span
 
-	//½«·ÖÅäºÃµÄSpan½øĞĞÁ´½Ó  ´Ë´¦span->_objlist»¹Î´½øĞĞÉèÖÃ  ¸ù¾İÒ³ºÅ¼ÆËã³önewspanµÄµØÖ·
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½Spanï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½Ë´ï¿½span->_objlistï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  ï¿½ï¿½ï¿½ï¿½Ò³ï¿½Å¼ï¿½ï¿½ï¿½ï¿½newspanï¿½Äµï¿½Ö·
 	char* start = (char*)(newspan->_pageid * 4 * 1024);
 	char* end = (start + (newspan->_npage) * 4 * 1024);
 	char* cur = start;
@@ -70,12 +67,12 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte)
 		next += byte;
 		count++;
 	}
-	NEXT_OBJ(cur) = nullptr;		//»á½«span->_objlistÉÏµÄ×îºóÒ»¿éÄÚ´æÉèÖÃÎªnullptr£¬×÷ÎªspanÊÇ·ñ¿ÕÏĞµÄ±êÖ¾
+	NEXT_OBJ(cur) = nullptr;		//ï¿½á½«span->_objlistï¿½Ïµï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½Îªnullptrï¿½ï¿½ï¿½ï¿½Îªspanï¿½Ç·ï¿½ï¿½ï¿½ĞµÄ±ï¿½Ö¾
 	newspan->_objlist = start;
 	newspan->_usecount = 0;
 	newspan->_objsize = byte;
 
-	//½«ĞÂµÄspanlist¹ÒÔØÔÚCentralCacheÖĞ
+	//ï¿½ï¿½ï¿½Âµï¿½spanlistï¿½ï¿½ï¿½ï¿½ï¿½ï¿½CentralCacheï¿½ï¿½
 	spanlist.PushFront(newspan);
 	
 	return newspan;
@@ -86,17 +83,17 @@ void CentralCache::ReturnToCentralCache(void* start)
 	std::unique_lock<std::mutex> _lock(_mtx);
 	while (start)
 	{
-		void* next = NEXT_OBJ(start);	//next±£´æÏÂÒ»¸öÄÚ´æ¿é
+		void* next = NEXT_OBJ(start);	//nextï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ú´ï¿½ï¿½
 
-		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//¸ù¾İµØÖ·ÄÃµ½ÄÚ´æ¿éËùÔÚµÄspan
-		NEXT_OBJ(start) = span->_objlist;	//Óë¶ÔÓ¦µÄspan->_objlistÁ¬½Ó
+		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//ï¿½ï¿½ï¿½İµï¿½Ö·ï¿½Ãµï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½span
+		NEXT_OBJ(start) = span->_objlist;	//ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½span->_objlistï¿½ï¿½ï¿½ï¿½
 		span->_objlist = start;	
 
 		span->_usecount--;
 
 		if (span->_usecount == 0)
 		{
-			//ËµÃ÷Õû¸öÒ³spanÈ«²¿±»·µ»¹£¬¼´¿ÉÒÔÈÃ¸Äspan·µ»¹¸øPageCache
+			//Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò³spanÈ«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¸ï¿½spanï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PageCache
 			SpanList& spanlist = _spanlist[span->_objsize];
 			spanlist.Earse(span);
 
