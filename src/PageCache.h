@@ -5,14 +5,9 @@
 #include <unordered_map>
 #include <mutex>
 
-/* PageCache
- * 与系统物理内存交互，一次申请128页连续内存
- */
-class PageCache
-{
+class PageCache {
 public:
-	static PageCache* GetInstance()
-	{
+	static PageCache* GetInstance() {
 		return &_Inst;
 	}
 
