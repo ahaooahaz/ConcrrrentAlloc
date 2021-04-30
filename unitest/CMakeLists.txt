@@ -8,3 +8,6 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../src)
 
 ADD_EXECUTABLE(TEST_VECTOR ${PROJECT_SOURCE_DIR}/../src/ConcurrentAlloc.hpp
                         ${PROJECT_SOURCE_DIR}/test_vector.cpp)
+
+ADD_EXECUTABLE(TEST_PAGECACHE ${PROJECT_SOURCE_DIR}/../src/PageCache.cpp
+${PROJECT_SOURCE_DIR}/test_pagecache.cpp)
