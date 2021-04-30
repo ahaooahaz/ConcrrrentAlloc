@@ -4,15 +4,11 @@
 #include <sys/mman.h>
 #include <unordered_map>
 #include <mutex>
+#include <unistd.h>
 
-/* PageCache
- * 与系统物理内存交互，一次申请128页连续内存
- */
-class PageCache
-{
+class PageCache {
 public:
-	static PageCache* GetInstance()
-	{
+	static PageCache* GetInstance() {
 		return &_Inst;
 	}
 
@@ -25,7 +21,7 @@ private:
 	PageCache(const PageCache&) = delete;
 	PageCache& operator=(const PageCache&) = delete;
 private:
-	SpanList _pagelist[NPAGES];
+	SpanList _pagelist[NPAGES + 1];
 	std::map<PageID, Span*> _id_span_map;
 	std::mutex _mtx;
 

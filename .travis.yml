@@ -1,0 +1,16 @@
+language: cpp
+
+cpp: 11
+
+sudo: false
+
+before_install: true
+
+install: 
+  - cd unitest
+  - mkdir build && cd build
+  - cmake ..
+  - make
+
+script:
+  - ./TEST*

@@ -1,18 +1,18 @@
 #pragma once
 #include <assert.h>
 #include <iostream>
+
+#define DEBUG 1
+#define DLOG(args ...) if (DEBUG) fprintf(stderr, args)
+
 using std::cout;
 using std::endl;
-//Common.hÖ÷Òª´æ·ÅÏîÄ¿ËùÓÃµ½µÄÊı¾İ½á¹¹¼°³£Á¿
 
-//±íÊ¾×ÔÓÉÁ´±íÖĞÒ»¹²ÓĞ240Àà´óĞ¡µÄÄÚ´æ¿é
 const size_t NLISTS = 240;
 
-//±íÊ¾×ÔÓÉÁ´±íÖĞ¿ÉÒÔ¸ø³öµÄ×î´óµÄÄÚ´æ¿éµÄ´óĞ¡Îª64KB
 const size_t MAXBYTES = 64 * 1024;
 
-//±íÊ¾PageCacheÖĞÒ³ÖÖÀàµÄÊıÁ¿ ¼´×î´óÎª128Ò³ 0Ò³´¦ÀË·Ñ
-const size_t NPAGES = 129;
+const size_t NPAGES = 128;
 
 inline void*& NEXT_OBJ(void* ptr)
 {
@@ -70,30 +70,30 @@ public:
 private:
 	void* _ptr = nullptr;
 
-	//¼ÇÂ¼¸Ã×ÔÓÉÁ´±íÁ´½ÓµÄÄÚ´æ¿éµÄsize
+	//ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½Ú´ï¿½ï¿½ï¿½size
 	size_t _size = 0;
 };
 
 class ClassSize
 {
 public:
-	//alignÔÚÕâÀï±íÊ¾¶ÔÆëÊı£¬¸Ãº¯ÊıµÄ×÷ÓÃÎª¸ù¾İsize¼ÆËã³öÓ¦¸Ã·ÖÅä¶à´óµÄÄÚ´æ¿é
+	//alignï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½sizeï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½
 	static inline size_t _Roundup(size_t size, size_t align)
 	{
 		//return ((size + align) / align * align);
 		return ((size + align - 1) & ~(align - 1));
 	}
 
-	//¸ù¾İsizeµÄ´óĞ¡¼ÆËãÓ¦¸Ã¸ø³öµÄÄÚ´æ¿é´óĞ¡
+	//ï¿½ï¿½ï¿½ï¿½sizeï¿½Ä´ï¿½Ğ¡ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½Ğ¡
 	static inline size_t Roundup(size_t size)
 	{
 		assert(size <= MAXBYTES);
 
-		//×ÜÌåÉÏ½«freelist·ÖÎªËÄ¶Î	ÎªÊ²Ã´Òª²ÉÓÃÕâÑùµÄ¶ÔÆë¹æÔò£¿
-		//[8, 128]									8B¶ÔÆë ²ÉÓÃSTLÄÚ´æ³ØµÄ·Ö¶Î¹æÔò
-		//[129, 1024]							16B¶ÔÆë
-		//[1025, 8 * 1024]					128B¶ÔÆë
-		//[8 * 1024 + 1, 64 * 1024]		512B¶ÔÆë
+		//ï¿½ï¿½ï¿½ï¿½ï¿½Ï½ï¿½freelistï¿½ï¿½Îªï¿½Ä¶ï¿½	ÎªÊ²Ã´Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		//[8, 128]									8Bï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½STLï¿½Ú´ï¿½ØµÄ·Ö¶Î¹ï¿½ï¿½ï¿½
+		//[129, 1024]							16Bï¿½ï¿½ï¿½ï¿½
+		//[1025, 8 * 1024]					128Bï¿½ï¿½ï¿½ï¿½
+		//[8 * 1024 + 1, 64 * 1024]		512Bï¿½ï¿½ï¿½ï¿½
 		if(size <= 128)
 		{
 			return _Roundup(size, 8);
@@ -111,7 +111,7 @@ public:
 			return _Roundup(size, 512);
 		}
 
-		//³ÌĞò×ßµ½ÕâÀïÊ±ËµÃ÷sizeÒÑ¾­³¬Ô½×î´óµÄÄÚ´æ¿é£¬ÓëÊ×²¿ÏàºôÓ¦
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ëµï¿½ï¿½sizeï¿½Ñ¾ï¿½ï¿½ï¿½Ô½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½é£¬ï¿½ï¿½ï¿½×²ï¿½ï¿½ï¿½ï¿½Ó¦
 		assert(false);
 		return -1;
 	}
@@ -141,12 +141,12 @@ public:
 			return _Index(size - 8 * 1024, 512) + 16 + 56 + 112;
 		}
 
-		//³ÌĞòµ½´ï¸Ã²½Öè£¬Ò»¶¨ÊÇÖ®Ç°Ä³´¦³ö´íÁË
+		//ï¿½ï¿½ï¿½òµ½´ï¿½Ã²ï¿½ï¿½è£¬Ò»ï¿½ï¿½ï¿½ï¿½Ö®Ç°Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		assert(false);
 		return -1;
 	}
 
-	//¼ÆËãÓ¦¸Ã¸ø³ö¶àÉÙ¸öÄÚ´æ¿é£¬ÄÚ´æ¿éÊı¿ØÖÆÔÚ[2, 512]Ö®¼ä
+	//ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¸ï¿½ï¿½Ú´ï¿½é£¬ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[2, 512]Ö®ï¿½ï¿½
 	static size_t NumMoveSize(size_t byte)
 	{
 		if (byte == 0)
@@ -164,9 +164,9 @@ public:
 
 	static size_t NumMovePage(size_t byte)
 	{
-		//¼ÆËãÓ¦¸Ã¸ø³ö¶àÉÙ¿éÄÚ´æ¿é
+		//ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¿ï¿½ï¿½Ú´ï¿½ï¿½
 		size_t num = NumMoveSize(byte);
-		size_t npage = (size_t)((num * byte) / (4 * 1024));	//¸ù¾İËùĞèÒª¸ø³öµÄÄÚ´æ¿éÊı¼ÆËãÓ¦¸ÃĞèÒª¼¸Ò³µÄÁ¬ĞøÄÚ´æ 1Ò³=4K
+		size_t npage = (size_t)((num * byte) / (4 * 1024));	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú´ï¿½ 1Ò³=4K
 		if (npage == 0)
 			npage = 1;
 
@@ -175,81 +175,77 @@ public:
 };
 
 typedef size_t PageID;
-struct Span
-{
-	PageID _pageid = 0;	// ¼ÇÂ¼Ò³ºÅ
-	size_t _npage = 0;	// ¼ÇÂ¼¸ÃSpanÖĞÒ»¹²ÓĞ¼¸Ò³ 1Ò³=4k
+struct Span {
+	PageID _pageid = 0;
+	size_t _npage = 0;
 
-	//SpanÎª´øÍ·Ë«ÏòÑ­»·Á´±í
 	Span* _prev = nullptr;
 	Span* _next = nullptr;
 
-	void* _objlist = nullptr;	// ¶ÔÏó×ÔÓÉÁ´±í
-	size_t _objsize = 0;	//¶ÔÏóÄÚ´æ¿éµÄ´óĞ¡
-	size_t _usecount = 0;	//¶ÔÏóÄÚ´æ¿éÊµÓÃ¼ÆÊı
+	void* _objlist = nullptr; // block
+	size_t _objsize = 0;
+	size_t _usecount = 0;
 };
 
-//CentralCacheµÄÊı¾İ½á¹¹
-class SpanList
-{
+/**
+ * @brief ç»´æŠ¤é¡µçº§å†…å­˜å—ï¼Œæ— å¤´åŒå‘é“¾è¡¨
+ * 
+ */
+class SpanList {
 public:
-	SpanList()
-	{
-		_head = new Span;
-		_head->_next = _head;
-		_head->_prev = _head;
-	}
+	SpanList() {}
 
-	void Insert(Span* cur, Span* newspan)
-	{
-		assert(cur);
-		Span* prev = cur->_prev;
+	void InsertFront(Span* newspan) {
+		assert(newspan);
+		if (_head == nullptr) {
+			_head = newspan;
+			_head->_next = newspan;
+			_head->_prev = newspan;
+			return;
+		}
+
+		Span* prev = _head->_prev;
+		Span* next = _head->_next;
 
 		prev->_next = newspan;
 		newspan->_prev = prev;
-		newspan->_next = cur;
-		cur->_prev = newspan;
+		newspan->_next = next;
+		next->_prev = newspan;
+		_head = newspan;
 	}
 
-	void Earse(Span* cur)
-	{
-		assert(cur != nullptr && cur != _head);
+
+	void Earse(Span* cur) {
+		assert(cur != nullptr);
 
 		Span* prev = cur->_prev;
 		Span* next = cur->_next;
 
 		prev->_next = next;
 		next->_prev = prev;
+
+		if (cur == _head) {
+			_head = next;
+		}
 	}
 
-	bool Empty()
-	{
-		return _head->_next == _head;
+	bool Empty() {
+		return _head == nullptr;
 	}
 
-	Span* Begin()
-	{
-		return _head->_next;
-	}
-
-	Span* End()
-	{
+	Span* Begin() {
 		return _head;
 	}
 
-	Span* Pop()
-	{
+	Span* End() {
+		return _head->_prev;
+	}
+
+	Span* Pop() {
 		Span* span = Begin();
 		Earse(span);
 		return span;
 	}
-
-
-	void PushFront(Span* span)
-	{
-		Insert(Begin(), span);
-	}
-
 
 private:
 	Span* _head = nullptr;

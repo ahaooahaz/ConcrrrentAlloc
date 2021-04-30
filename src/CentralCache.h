@@ -4,11 +4,9 @@
 #include <malloc.h>
 #include <mutex>
 
-class CentralCache
-{
+class CentralCache {
 public:
-	static inline CentralCache* GetInstance()
-	{
+	static inline CentralCache* GetInstance() {
 		return &_Inst;
 	}
 
