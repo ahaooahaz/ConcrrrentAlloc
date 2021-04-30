@@ -1,6 +1,10 @@
 #pragma once
 #include <assert.h>
 #include <iostream>
+
+#define DEBUG 1
+#define DLOG(args ...) if (DEBUG) fprintf(stderr, args)
+
 using std::cout;
 using std::endl;
 
@@ -8,7 +12,7 @@ const size_t NLISTS = 240;
 
 const size_t MAXBYTES = 64 * 1024;
 
-const size_t NPAGES = 129;
+const size_t NPAGES = 128;
 
 inline void*& NEXT_OBJ(void* ptr)
 {
@@ -178,69 +182,70 @@ struct Span {
 	Span* _prev = nullptr;
 	Span* _next = nullptr;
 
-	void* _objlist = nullptr;
+	void* _objlist = nullptr; // block
 	size_t _objsize = 0;
 	size_t _usecount = 0;
 };
 
+/**
+ * @brief 维护页级内存块，无头双向链表
+ * 
+ */
 class SpanList {
 public:
-	SpanList() {
-		_head = new Span;
-		_head->_next = _head;
-		_head->_prev = _head;
-	}
+	SpanList() {}
 
-	void Insert(Span* cur, Span* newspan)
-	{
-		assert(cur);
-		Span* prev = cur->_prev;
+	void InsertFront(Span* newspan) {
+		assert(newspan);
+		if (_head == nullptr) {
+			_head = newspan;
+			_head->_next = newspan;
+			_head->_prev = newspan;
+			return;
+		}
+
+		Span* prev = _head->_prev;
+		Span* next = _head->_next;
 
 		prev->_next = newspan;
 		newspan->_prev = prev;
-		newspan->_next = cur;
-		cur->_prev = newspan;
+		newspan->_next = next;
+		next->_prev = newspan;
+		_head = newspan;
 	}
 
-	void Earse(Span* cur)
-	{
-		assert(cur != nullptr && cur != _head);
+
+	void Earse(Span* cur) {
+		assert(cur != nullptr);
 
 		Span* prev = cur->_prev;
 		Span* next = cur->_next;
 
 		prev->_next = next;
 		next->_prev = prev;
+
+		if (cur == _head) {
+			_head = next;
+		}
 	}
 
-	bool Empty()
-	{
-		return _head->_next == _head;
+	bool Empty() {
+		return _head == nullptr;
 	}
 
-	Span* Begin()
-	{
-		return _head->_next;
-	}
-
-	Span* End()
-	{
+	Span* Begin() {
 		return _head;
 	}
 
-	Span* Pop()
-	{
+	Span* End() {
+		return _head->_prev;
+	}
+
+	Span* Pop() {
 		Span* span = Begin();
 		Earse(span);
 		return span;
 	}
-
-
-	void PushFront(Span* span)
-	{
-		Insert(Begin(), span);
-	}
-
 
 private:
 	Span* _head = nullptr;

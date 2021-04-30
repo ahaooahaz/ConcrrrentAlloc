@@ -8,46 +8,52 @@ Span* PageCache::NewSpan(size_t npage) {
 }
 
 Span* PageCache::_NewSpan(size_t npage) {
-	assert(npage < NPAGES);
+	assert(npage <= NPAGES && npage != 0);
 
 	if (!_pagelist[npage].Empty()) {
 		return _pagelist[npage].Pop();
 	}
 
-	for (size_t i = npage + 1; i < NPAGES; ++i) {
-		Span* split = nullptr;
-		SpanList& pagelist = _pagelist[i];
-		if (!pagelist.Empty()) {
-			Span* span = pagelist.Pop();
+	if (npage != NPAGES) {
+		for (size_t i = npage + 1; i <= NPAGES; ++i) {
+			Span* split = nullptr;
+			SpanList& pagelist = _pagelist[i];
+			if (!pagelist.Empty()) {
+				Span* span = pagelist.Pop();
 
-			split = new Span;
-			split->_pageid = span->_pageid + span->_npage - npage;
-			split->_npage = npage;
+				split = new Span;
+				split->_pageid = span->_pageid + span->_npage - npage;
+				split->_npage = npage;
 
-			span->_npage -= npage;
+				span->_npage -= npage;
 
-			_pagelist[span->_npage].PushFront(span);
+				_pagelist[span->_npage].InsertFront(span);
 
-			for (size_t i = 0; i < split->_npage; ++i) {
-				_id_span_map[split->_pageid + i] = split;
+				// for (size_t i = 0; i < split->_npage; ++i) {
+				// 	_id_span_map[split->_pageid + i] = split;
+				// }
+				return split;
 			}
-			return split;
 		}
 	}
 
-	//void* ptr = VirtualAlloc(NULL, (NPAGES - 1) * 4 * 1024, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);	//ֱ����ϵͳ����128ҳ�Ĵ�С
-    void* ptr = mmap(NULL, (NPAGES - 1) * 4 * 1024, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | 0x40000 /*MAP_HUGETLB*/, -1, 0);
-	if (ptr == nullptr)
-	{
+	// void* ptr = VirtualAlloc(NULL, (NPAGES - 1) * 4 * 1024, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+	/**
+	 * @brief mmap 将文件或对象映射进内存
+	 * @param start 映射区域的开始地址
+	 */
+    void* ptr = mmap(NULL, getpagesize() * npage, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+	if (ptr == MAP_FAILED) {
 		throw std::bad_alloc();
 	}
 
 	Span* maxspan = new Span;
 	maxspan->_objlist = ptr;
 	maxspan->_pageid = (PageID)ptr >> 12;
-	maxspan->_npage = NPAGES - 1;
-	_pagelist[NPAGES - 1].PushFront(maxspan);
-	return _NewSpan(npage);
+	maxspan->_npage = NPAGES;
+	_pagelist[NPAGES].InsertFront(maxspan);
+	// return _NewSpan(npage);
+	return maxspan;
 }
 
 Span* PageCache::MapObjectToSpan(void* obj) {
@@ -107,6 +113,6 @@ void PageCache::TakeSpanToPageCache(Span* span) {
 		_id_span_map[span->_pageid + i] = span;
 	}
 
-	_pagelist[span->_npage].PushFront(span);
+	_pagelist[span->_npage].InsertFront(span);
 
 }
