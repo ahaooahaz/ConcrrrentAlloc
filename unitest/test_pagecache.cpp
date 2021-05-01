@@ -5,7 +5,7 @@
 
 bool test_new_span() {
     srand((unsigned int)time(nullptr));
-    int n = rand() % 128;
+    int n = 1 + rand() % 127;
     Span* span = PageCache::GetInstance()->NewSpan(n);
     if (span == nullptr) {
         std::cout << "NewSpan failed" << std::endl;
@@ -16,7 +16,7 @@ bool test_new_span() {
     unsigned int * indexr = (unsigned int*)span->_objlist;
     int i = 0;
     for (i = 0; i < intn; i++) {
-        indexr[i] = 1;
+        indexr[i] = i;
         printf("r address: %p, num: %d, index: %d, npage: %d, intn: %d\n", ((unsigned int*)indexr+i), (*((unsigned int*)indexr+i)), i, n, intn);
     }
 

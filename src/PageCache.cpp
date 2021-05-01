@@ -22,27 +22,31 @@ Span* PageCache::_NewSpan(size_t npage) {
 				Span* span = pagelist.Pop();
 
 				split = new Span;
-				split->_pageid = span->_pageid + span->_npage - npage;
+				split->_pageid = span->_pageid;
 				split->_npage = npage;
+				split->_objlist = span->_objlist;
 
+				span->_pageid += npage;
 				span->_npage -= npage;
+				span->_objlist = (void*)((char*)span->_objlist + getpagesize() * npage);
 
 				_pagelist[span->_npage].InsertFront(span);
 
-				// for (size_t i = 0; i < split->_npage; ++i) {
-				// 	_id_span_map[split->_pageid + i] = split;
-				// }
+				for (size_t i = 0; i < split->_npage; ++i) {
+					_id_span_map[split->_pageid + i] = split;
+				}
 				return split;
 			}
 		}
 	}
-
+	/**
+	 * @note mmap windows平台用于申请大块连续内存
+	 */
 	// void* ptr = VirtualAlloc(NULL, (NPAGES - 1) * 4 * 1024, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	/**
-	 * @brief mmap 将文件或对象映射进内存
-	 * @param start 映射区域的开始地址
+	 * @note mmap linux系统调用，用于申请大块连续内存
 	 */
-    void* ptr = mmap(NULL, getpagesize() * npage, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    void* ptr = mmap(NULL, getpagesize() * NPAGES, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
 	if (ptr == MAP_FAILED) {
 		throw std::bad_alloc();
 	}
@@ -52,8 +56,7 @@ Span* PageCache::_NewSpan(size_t npage) {
 	maxspan->_pageid = (PageID)ptr >> 12;
 	maxspan->_npage = NPAGES;
 	_pagelist[NPAGES].InsertFront(maxspan);
-	// return _NewSpan(npage);
-	return maxspan;
+	return _NewSpan(npage);
 }
 
 Span* PageCache::MapObjectToSpan(void* obj) {
@@ -61,7 +64,7 @@ Span* PageCache::MapObjectToSpan(void* obj) {
 	auto it = _id_span_map.find(pageid);
 
 	if(it == _id_span_map.end()) {
-		assert(false);
+		return nullptr;
 	}
 	return it->second;
 }
@@ -91,7 +94,7 @@ void PageCache::TakeSpanToPageCache(Span* span) {
 		previt = _id_span_map.find(span->_pageid - 1);
 	}
 
-	auto nextit = _id_span_map.find(span->_pageid + span->_npage);
+	auto nextit = _id_span_map.find(span->_pageid + span->_npage + 1);
 	while (nextit != _id_span_map.end()) {
 		Span* nextspan = nextit->second;
 		if ((span->_npage + nextspan->_npage) > NPAGES) {

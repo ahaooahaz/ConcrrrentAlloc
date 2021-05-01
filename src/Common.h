@@ -166,7 +166,7 @@ public:
 	{
 		//����Ӧ�ø������ٿ��ڴ��
 		size_t num = NumMoveSize(byte);
-		size_t npage = (size_t)((num * byte) / (4 * 1024));	//��������Ҫ�������ڴ��������Ӧ����Ҫ��ҳ�������ڴ� 1ҳ=4K
+		size_t npage = (size_t)((num * byte) / (4 * 1024));
 		if (npage == 0)
 			npage = 1;
 
@@ -175,6 +175,7 @@ public:
 };
 
 typedef size_t PageID;
+
 struct Span {
 	PageID _pageid = 0;
 	size_t _npage = 0;
