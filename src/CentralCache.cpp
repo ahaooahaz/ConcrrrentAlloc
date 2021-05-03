@@ -46,8 +46,8 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte) {
 	size_t npage = ClassSize::NumMovePage(byte);
 	Span* newspan = PageCache::GetInstance()->NewSpan(npage);
 
-	char* start = (char*)(newspan->_pageid * 4 * 1024);
-	char* end = (start + (newspan->_npage) * 4 * 1024);
+	char* start = (char*)(newspan->_pageid * getpagesize());
+	char* end = (start + (newspan->_npage) * getpagesize());
 	char* cur = start;
 	char* next = start + byte;
 	size_t count = 0;
@@ -62,7 +62,7 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte) {
 	newspan->_usecount = 0;
 	newspan->_objsize = byte;
 
-	spanlist.PushFront(newspan);
+	spanlist.InsertFront(newspan);
 	return newspan;
 }
 

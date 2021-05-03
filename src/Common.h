@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 #include <iostream>
+#include <unistd.h>
 
 #define DEBUG 1
 #define DLOG(args ...) if (DEBUG) fprintf(stderr, args)
@@ -14,8 +15,7 @@ const size_t MAXBYTES = 64 * 1024;
 
 const size_t NPAGES = 128;
 
-inline void*& NEXT_OBJ(void* ptr)
-{
+inline void*& NEXT_OBJ(void* ptr) {
 	return *((void**)ptr);
 }
 
@@ -162,11 +162,9 @@ public:
 		return num;
 	}
 
-	static size_t NumMovePage(size_t byte)
-	{
-		//����Ӧ�ø������ٿ��ڴ��
+	static size_t NumMovePage(size_t byte) {
 		size_t num = NumMoveSize(byte);
-		size_t npage = (size_t)((num * byte) / (4 * 1024));
+		size_t npage = (size_t)((num * byte) / getpagesize());
 		if (npage == 0)
 			npage = 1;
 
