@@ -70,17 +70,15 @@ void CentralCache::ReturnToCentralCache(void* start) {
 	std::unique_lock<std::mutex> _lock(_mtx);
 	while (start)
 	{
-		void* next = NEXT_OBJ(start);	//next������һ���ڴ��
+		void* next = NEXT_OBJ(start);
 
-		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//���ݵ�ַ�õ��ڴ�����ڵ�span
-		NEXT_OBJ(start) = span->_objlist;	//���Ӧ��span->_objlist����
+		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);
+		NEXT_OBJ(start) = span->_objlist;
 		span->_objlist = start;	
 
 		span->_usecount--;
 
-		if (span->_usecount == 0)
-		{
-			//˵������ҳspanȫ�����������������ø�span������PageCache
+		if (span->_usecount == 0) {
 			SpanList& spanlist = _spanlist[span->_objsize];
 			spanlist.Earse(span);
 
