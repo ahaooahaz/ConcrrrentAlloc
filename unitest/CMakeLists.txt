@@ -11,4 +11,10 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/../src)
 #                         ${PROJECT_SOURCE_DIR}/test_vector.cpp)
 
 ADD_EXECUTABLE(TEST_PAGECACHE ${PROJECT_SOURCE_DIR}/../src/PageCache.cpp
-${PROJECT_SOURCE_DIR}/test_pagecache.cpp)
+                                ${PROJECT_SOURCE_DIR}/../src/Common.hpp
+                                ${PROJECT_SOURCE_DIR}/test_pagecache.cpp)
+
+ADD_EXECUTABLE(TEST_CENTRALCACHE ${PROJECT_SOURCE_DIR}/../src/CentralCache.cpp
+                                ${PROJECT_SOURCE_DIR}/../src/PageCache.cpp
+                                ${PROJECT_SOURCE_DIR}/../src/Common.hpp
+                                ${PROJECT_SOURCE_DIR}/test_centralcache.cpp)

@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 #include <iostream>
+#include <unistd.h>
 
 #define DEBUG 1
 #define DLOG(args ...) if (DEBUG) fprintf(stderr, args)
@@ -14,8 +15,7 @@ const size_t MAXBYTES = 64 * 1024;
 
 const size_t NPAGES = 128;
 
-inline void*& NEXT_OBJ(void* ptr)
-{
+inline void*& NEXT_OBJ(void* ptr) {
 	return *((void**)ptr);
 }
 
@@ -77,80 +77,57 @@ private:
 class ClassSize
 {
 public:
-	//align�������ʾ���������ú���������Ϊ����size�����Ӧ�÷�������ڴ��
-	static inline size_t _Roundup(size_t size, size_t align)
-	{
-		//return ((size + align) / align * align);
+	static inline size_t _Roundup(size_t size, size_t align) {
+		DLOG("size: %ld, align: %ld, return: %ld\n", size, align, ((size + align - 1) & ~(align - 1)));
 		return ((size + align - 1) & ~(align - 1));
 	}
 
-	//����size�Ĵ�С����Ӧ�ø������ڴ���С
-	static inline size_t Roundup(size_t size)
-	{
+	// 字节向上对齐
+	static inline size_t Roundup(size_t size) {
 		assert(size <= MAXBYTES);
 
-		//�����Ͻ�freelist��Ϊ�Ķ�	ΪʲôҪ���������Ķ������
-		//[8, 128]									8B���� ����STL�ڴ�صķֶι���
-		//[129, 1024]							16B����
-		//[1025, 8 * 1024]					128B����
-		//[8 * 1024 + 1, 64 * 1024]		512B����
-		if(size <= 128)
-		{
+		if(size <= 128) {
 			return _Roundup(size, 8);
 		}
-		else if(size <= 1024)
-		{
+		else if(size <= 1024) {
 			return _Roundup(size, 16);
 		}
-		else if(size <= 8 * 1024)
-		{
+		else if(size <= 8 * 1024) {
 			return _Roundup(size, 128);
 		}
-		else if(size <= 64 * 1024)
-		{
+		else if(size <= 64 * 1024) {
 			return _Roundup(size, 512);
 		}
 
-		//�����ߵ�����ʱ˵��size�Ѿ���Խ�����ڴ�飬���ײ����Ӧ
 		assert(false);
 		return -1;
 	}
-	static inline size_t _Index(size_t size, size_t align)
-	{
+	static inline size_t _Index(size_t size, size_t align) {
 		return _Roundup(size, align) / align - 1;
 	}
 
-	static inline size_t Index(size_t size)
-	{
+	static inline size_t Index(size_t size) {
 		assert(size <= MAXBYTES);
 
-		if(size <= 128)
-		{
+		if(size <= 128) {
 			return _Index(size, 8);
 		}
-		else if(size <= 1024)
-		{
+		else if(size <= 1024) {
 			return _Index(size - 128, 16) + 16;
 		}
-		else if(size <= 8 * 1024)
-		{
+		else if(size <= 8 * 1024) {
 			return _Index(size - 1024, 128) + 16 + 56;
 		}
-		else if(size <= 64 * 1024)
-		{
+		else if(size <= 64 * 1024) {
 			return _Index(size - 8 * 1024, 512) + 16 + 56 + 112;
 		}
 
-		//���򵽴�ò��裬һ����֮ǰĳ��������
 		assert(false);
 		return -1;
 	}
 
-	//����Ӧ�ø������ٸ��ڴ�飬�ڴ����������[2, 512]֮��
-	static size_t NumMoveSize(size_t byte)
-	{
-		if (byte == 0)
-		{
+	static size_t NumMoveSize(size_t byte) {
+		if (byte == 0) {
 			return 0;
 		}
 		int num = (int)(MAXBYTES / byte);
@@ -162,11 +139,9 @@ public:
 		return num;
 	}
 
-	static size_t NumMovePage(size_t byte)
-	{
-		//����Ӧ�ø������ٿ��ڴ��
+	static size_t NumMovePage(size_t byte) {
 		size_t num = NumMoveSize(byte);
-		size_t npage = (size_t)((num * byte) / (4 * 1024));
+		size_t npage = (size_t)((num * byte) / getpagesize());
 		if (npage == 0)
 			npage = 1;
 

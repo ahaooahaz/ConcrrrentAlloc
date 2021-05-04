@@ -1,19 +1,24 @@
 #pragma once
-#include "Common.h"
+#include "Common.hpp"
 #include "CentralCache.h"
 
-//ThreadCacheÊÇÒ»¸öÏß³Ì¶ÀÓĞµÄ×ÊÔ´£¬Ö±½ÓÓë±¾Ïß³Ì½»»¥
-class ThreadCache
-{
+class ThreadCache {
 public:
-	//ThreadCacheÌá¹©Á½¸ö½Ó¿Ú£¬Ò»¸öÎªÉêÇëÄÚ´æ£¬ÁíÒ»¸öÎªÊÍ·ÅÄÚ´æ
+	/**
+	 * @brief ç”³è¯·å†…å­˜èµ„æº
+	 * @param [in] size ç”³è¯·å†…å­˜çš„å¤§å°(byte)
+	 * @return ç”³è¯·åˆ°çš„å†…å­˜çš„åœ°å€ï¼Œå¤±è´¥ä¸ºç©º
+	 */
 	void* Allocate(size_t size);
+
+	/**
+	 * @brief é‡Šæ”¾å†…å­˜
+	 * @param [in] ptr é‡Šæ”¾çš„å†…å­˜ä½ç½®
+	 */
 	void Deallocate(void* ptr);
 
-	void ReturnToCentralCache(FreeList &freelist);
-
 private:
-	//ÏòCentralCacheÉêÇëÄÚ´æ¿éµÄ½Ó¿Ú,·µ»ØÒ»¿éÄÚ´æ¿é£¬½«Ê£ÏÂµÄ¹ÒÔØÔÚThreadCacheµÄ¶ÔÓ¦´¦
+	void ReturnToCentralCache(FreeList &freelist);
 	void* FetchFromCentralCache(size_t index, size_t byte);
 private:
 	FreeList _freelist[NLISTS];

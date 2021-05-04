@@ -46,8 +46,8 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte) {
 	size_t npage = ClassSize::NumMovePage(byte);
 	Span* newspan = PageCache::GetInstance()->NewSpan(npage);
 
-	char* start = (char*)(newspan->_pageid * 4 * 1024);
-	char* end = (start + (newspan->_npage) * 4 * 1024);
+	char* start = (char*)(newspan->_pageid * getpagesize());
+	char* end = (start + (newspan->_npage) * getpagesize());
 	char* cur = start;
 	char* next = start + byte;
 	size_t count = 0;
@@ -62,7 +62,7 @@ Span* CentralCache::GetOneSpan(SpanList& spanlist, size_t byte) {
 	newspan->_usecount = 0;
 	newspan->_objsize = byte;
 
-	spanlist.PushFront(newspan);
+	spanlist.InsertFront(newspan);
 	return newspan;
 }
 
@@ -70,17 +70,15 @@ void CentralCache::ReturnToCentralCache(void* start) {
 	std::unique_lock<std::mutex> _lock(_mtx);
 	while (start)
 	{
-		void* next = NEXT_OBJ(start);	//next������һ���ڴ��
+		void* next = NEXT_OBJ(start);
 
-		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);	//���ݵ�ַ�õ��ڴ�����ڵ�span
-		NEXT_OBJ(start) = span->_objlist;	//���Ӧ��span->_objlist����
+		Span* span = PageCache::GetInstance()->MapObjectToSpan(start);
+		NEXT_OBJ(start) = span->_objlist;
 		span->_objlist = start;	
 
 		span->_usecount--;
 
-		if (span->_usecount == 0)
-		{
-			//˵������ҳspanȫ�����������������ø�span������PageCache
+		if (span->_usecount == 0) {
 			SpanList& spanlist = _spanlist[span->_objsize];
 			spanlist.Earse(span);
 
