@@ -70,7 +70,6 @@ public:
 private:
 	void* _ptr = nullptr;
 
-	//��¼�������������ӵ��ڴ���size
 	size_t _size = 0;
 };
 
@@ -87,16 +86,16 @@ public:
 		assert(size <= MAXBYTES);
 
 		if(size <= 128) {
-			return _Roundup(size, 8);
+			return _Roundup(size, 8); // 16
 		}
 		else if(size <= 1024) {
-			return _Roundup(size, 16);
+			return _Roundup(size, 16); // 56
 		}
 		else if(size <= 8 * 1024) {
-			return _Roundup(size, 128);
+			return _Roundup(size, 128); // 56
 		}
 		else if(size <= 64 * 1024) {
-			return _Roundup(size, 512);
+			return _Roundup(size, 512); // 112
 		}
 
 		assert(false);

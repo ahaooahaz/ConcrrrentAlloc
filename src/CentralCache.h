@@ -18,7 +18,7 @@ public:
 	 * @param [out] end 可用内存的结束位置
 	 * @param [in] num 期望获取到的内存块个数
 	 * @param [in] byte 内存块的规格
-	 * @return 实际返回的内存块个数 
+	 * @return 实际返回的内存块个数
 	 */
 	size_t FetchRangeObj(void*& start, void*& end, size_t num, size_t byte);
 
@@ -35,7 +35,7 @@ private:
 	CentralCache(const CentralCache&) = delete;
 	CentralCache& operator=(const CentralCache&) = delete;
 private:
-	SpanList _spanlist[NLISTS];
+	SpanList _spanlist[NLISTS + 1];
 
 	std::mutex _mtx;
 	static CentralCache _Inst;
