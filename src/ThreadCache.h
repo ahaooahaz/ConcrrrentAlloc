@@ -21,5 +21,5 @@ private:
 	void ReturnToCentralCache(FreeList &freelist);
 	void* FetchFromCentralCache(size_t index, size_t byte);
 private:
-	FreeList _freelist[NLISTS];
+	FreeList _freelist[NLISTS + 1];
 };

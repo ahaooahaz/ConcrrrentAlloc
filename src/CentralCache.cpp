@@ -7,9 +7,11 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 
 	std::unique_lock<std::mutex> _lock(_mtx);
 	size_t index = ClassSize::Index(byte);
+	size_t up_byte = ClassSize::Roundup(byte);
 	SpanList& spanlist = _spanlist[index];
 	size_t fetchnum = 0;
-	Span* span = GetOneSpan(spanlist, byte);
+	Span* span = GetOneSpan(spanlist, up_byte);
+	DLOG("index: %ld, byte: %ld, round up byte: %ld, span []\n", index, byte, up_byte);
 
 	void* prev = nullptr;
 	void* cur = span->_objlist;
@@ -21,12 +23,12 @@ size_t CentralCache::FetchRangeObj(void*& start, void*& end, size_t num, size_t 
 		++fetchnum;
 	}
 	start = span->_objlist;
-	
+
 	NEXT_OBJ(prev) = nullptr;
 	end = prev;
 
 	span->_usecount += fetchnum;
-	span->_objlist = (void*)((char*)prev + byte);
+	span->_objlist = (void*)((char*)prev + up_byte);
 	return fetchnum;
 }
 
