@@ -20,14 +20,15 @@ bool test_new_span() {
         printf("r address: %p, num: %d, index: %d, npage: %d, intn: %d\n", ((unsigned int*)indexr+i), (*((unsigned int*)indexr+i)), i, n, intn);
     }
 
-    if (n * 1024 != (i + 1)) {
+    if (n * 1024 != i) {
+        printf("n * 1024: %d, i: %d\n", n * 1024, i);
         return false;
     }
     return true;
 }
 
 int main() {
-    assert(!test_new_span());
+    assert(test_new_span());
 
     return 0;
 }

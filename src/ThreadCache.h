@@ -4,6 +4,11 @@
 
 class ThreadCache {
 public:
+
+	static ThreadCache* GetInstance() {
+		return &_Inst;
+	}
+
 	/**
 	 * @brief 申请内存资源
 	 * @param [in] size 申请内存的大小(byte)
@@ -22,4 +27,6 @@ private:
 	void* FetchFromCentralCache(size_t index, size_t byte);
 private:
 	FreeList _freelist[NLISTS + 1];
+
+	static __thread ThreadCache _Inst;
 };

@@ -79,9 +79,8 @@ void CentralCache::ReturnToCentralCache(void* start) {
 		span->_objlist = start;	
 
 		span->_usecount--;
-
 		if (span->_usecount == 0) {
-			SpanList& spanlist = _spanlist[span->_objsize];
+			SpanList& spanlist = _spanlist[ClassSize::Index(span->_objsize)];
 			spanlist.Earse(span);
 
 			span->_objlist = nullptr;

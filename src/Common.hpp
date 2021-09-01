@@ -3,11 +3,8 @@
 #include <iostream>
 #include <unistd.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #define DLOG(args ...) if (DEBUG) fprintf(stderr, args)
-
-using std::cout;
-using std::endl;
 
 const size_t NLISTS = 240;
 

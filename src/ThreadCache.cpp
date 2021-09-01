@@ -1,5 +1,7 @@
 #include "ThreadCache.h"
 
+__thread ThreadCache ThreadCache::_Inst;
+
 void* ThreadCache::Allocate(size_t size) {
 	assert(size <= MAXBYTES);
 
@@ -34,7 +36,9 @@ void* ThreadCache::FetchFromCentralCache(size_t index, size_t byte) {
 void ThreadCache::Deallocate(void* ptr) {
 	Span* span = PageCache::GetInstance()->MapObjectToSpan(ptr);
 
-	if (span->_objsize > MAXBYTES) {
+	assert(span);
+
+	if (span->_objsize >= MAXBYTES) {
 		PageCache::GetInstance()->TakeSpanToPageCache(span);
 		return;
 	}
